@@ -7,9 +7,9 @@
 #define MAX_TOKEN_LENGTH 10
 
 
-Token nextToken(FILE *cF, int* lc){
+token_t next_token(FILE *cF, int* lc){
 
-	int c = advanceChar(cF, lc);
+	int c = advance_char(cF, lc);
 
 	int line = lc[0];
 	int column = lc[1];
@@ -18,7 +18,7 @@ Token nextToken(FILE *cF, int* lc){
 
 	while(isspace(c)){
 
-		c = advanceChar(cF, lc);
+		c = advance_char(cF, lc);
 
 	}
 
@@ -27,65 +27,76 @@ Token nextToken(FILE *cF, int* lc){
 
 	switch(c){
 
-		case EOF:{
-			char* string = strdup("EOF");
-			return (Token){TOK_EOF, string, line, column};
-			break;}
+		case EOF:
+			{
+				char* string = strdup("EOF");
+				return (token_t){TOK_EOF, string, line, column};
+				break;
+			}
+		case '+':
+			{
+				char* string = strdup("+");
+				return (token_t){TOK_PLUS, string, line, column};
+				break;
+			}
 
-		case '+':{
-			char* string = strdup("+");
-			return (Token){TOK_PLUS, string, line, column};
-			break;}
+		case '(':
+			{
+				char* string = strdup("(");
+				return (token_t){TOK_LPARENTH, string, line, column};
+				break;
+			}
 
-		case '(':{
-			char* string = strdup("(");
-			return (Token){TOK_LPARENTH, string, line, column};
-			break;}
+		case ')':
+			{
+				char* string = strdup(")");
+				return (token_t){TOK_RPARENTH, string, line, column};
+				break;
+			}
 
-		case ')':{
-			char* string = strdup(")");
-			return (Token){TOK_RPARENTH, string, line, column};
-			break;}
+		case '{':
+			{
+				char* string = strdup("{");
+				return (token_t){TOK_LBRACE, string, line, column};
+				break;
+			}
 
-		case '{':{
-			char* string = strdup("{");
-			return (Token){TOK_LBRACE, string, line, column};
-			break;}
+		case '}':
+			{
+				char* string = strdup("}");
+				return (token_t){TOK_RBRACE, string, line, column};
+				break;
+			}
 
-		case '}':{
-			char* string = strdup("}");
-			return (Token){TOK_RBRACE, string, line, column};
-			break;}
-
-		case ';':{
-			char* string = strdup(";");
-			return (Token){TOK_SEMI, string, line, column};
-			break;}
-		default:
-			break;
+		case ';':
+			{
+				char* string = strdup(";");
+				return (token_t){TOK_SEMI, string, line, column};
+				break;
+			}
 
 	}
 
 	if(c >= '0' && c <= '9'){
 
-		return createConstantToken(cF, c, lc);
+		return create_constant_token(cF, c, lc);
 
 	}
 
 	if(isalpha(c) || c == '_'){
 
-		return createKeywordOrIdentifierToken(cF, c, lc);
+		return create_keyword_or_identifier_token(cF, c, lc);
 
 	}
 
-	return (Token){TOK_UNKNOWN, "UNKNOWN", line, column};
+	return (token_t){TOK_UNKNOWN, "UNKNOWN", line, column};
 
 
 }
 
 
 
-int advanceChar(FILE *cF, int* lc){
+int advance_char(FILE *cF, int* lc){
 
 	int* line = lc;
 	int* column = lc + 1;
@@ -109,16 +120,16 @@ int advanceChar(FILE *cF, int* lc){
 }
 
 
-int retreatChar(FILE *cF, int* lc, int* retreatData){
+int retreat_char(FILE *cF, int* lc, int* retreat_data){
 
-	int* line = lc
-		int* column = lc + 1;
+	int* line = lc;
+	int* column = lc + 1;
 
-	char c = retreatData[0];
-	char prevColumn = retreatData[1];
+	char c = retreat_data[0];
+	char prev_column = retreat_data[1];
 
 
-	int prevChar = ungetc(c, cF);
+	int prev_char = ungetc(c, cF);
 
 	if(c == '\n'){
 
@@ -126,41 +137,41 @@ int retreatChar(FILE *cF, int* lc, int* retreatData){
 
 	}
 
-	*column = prevColumn;
+	*column = prev_column;
 
-	return prevChar;
+	return prev_char;
 
 }
 
 
-Token createConstantToken(FILE *cF, char c, int* lc){
+token_t create_constant_token(FILE *cF, char c, int* lc){
 
 	char constant[MAX_TOKEN_LENGTH] = "";
-	int prevColumn;
+	int prev_column;
 
 	do{
 
-		prevColumn = lc[1];
+		prev_column = lc[1];
 
-		char additionStr[2]; = {c, '\0'};
-		strcat(constant, additionStr);
+		char addition_str[2] = {c, '\0'};
+		strcat(constant, addition_str);
 
-		c = advanceChar(cF, lc);
+		c = advance_char(cF, lc);
 
 	}
 	while(c >= '0' && c <= '9');
 
 
-	int retreatData[2] = {c, prevColumn};
-	c = retreatChar(cF, lc, retreatData);
+	int retreat_data[2] = {c, prev_column};
+	c = retreat_char(cF, lc, retreat_data);
 
 
 	int line = lc[0];
 	int column = lc[1];
 
-	char* stringval = strdup(constant);
+	char* string = strdup(constant);
 
-	return (Token){TOK_INT_LITERAL, stringval, line, column};
+	return (token_t){TOK_INT_LITERAL, string, line, column};
 
 
 
@@ -170,51 +181,51 @@ Token createConstantToken(FILE *cF, char c, int* lc){
 
 
 
-Token createKeywordOrIdentifierToken(FILE *cF, char c, int* lc){
+token_t create_keyword_or_identifier_token(FILE *cF, char c, int* lc){
 
 	char word[MAX_TOKEN_LENGTH] = "";
 
-	int prevColumn;
+	int prev_column;
 
 	do{
 
-		prevColumn = lc[1];
+		prev_column = lc[1];
 
-		char additionStr[2] = {c, '\0'};
-		strcat(word, additionStr);
+		char addition_str[2] = {c, '\0'};
+		strcat(word, addition_str);
 
-		c = advanceChar(cF, lc);
+		c = advance_char(cF, lc);
 
 	}
 	while(isalpha(c) || c == '_');
 
-	int retreatData[2] = {c, prevColumn};
-	c = retreatChar(cF, lc, retreatData);
+	int retreat_data[2] = {c, prev_column};
+	c = retreat_char(cF, lc, retreat_data);
 
 
 	int line = lc[0];
 	int column = lc[1];
 
-	char* stringVal = strdup(word);
+	char* string = strdup(word);
 
 
-	if(strcmp(stringVal, "int") == 0){
+	if(strcmp(string, "int") == 0){
 
-		return (Token){TOK_INT_TYPE, stringVal, line, column};
+		return (token_t){TOK_INT_TYPE, string, line, column};
 
 
 	}
-	else if(strcmp(stringVal, "return") == 0){
+	else if(strcmp(string, "return") == 0){
 
 
-		return (Token){TOK_RETURN, stringVal, line, column};
-		
+		return (token_t){TOK_RETURN, string, line, column};
+
 
 	}
 	else{
 
 
-		return (Token){TOK_IDENTIFIER, stringVal, line, column};
+		return (token_t){TOK_IDENTIFIER, string, line, column};
 
 	}
 

@@ -2,7 +2,7 @@
 #define LEXER_H
 
 
-typedef enum{
+typedef enum token_type{
 
 
 	TOK_EOF,
@@ -24,26 +24,26 @@ typedef enum{
 
 	TOK_UNKNOWN
 
-}TokenType;
+}token_type_t;
 
 
-typedef struct{
+typedef struct token{
 
 
-	TokenType type;
-	char* stringVal;
+	token_type_t type;
+	char* string;
 	int line;
 	int column;
 
-}Token;
+}token_t;
 
 
 
-Token nextToken(FILE* cFm int* lc);
-void skipWhiteSpace(FILE *cF, int* c, int* lc);
-int advanceChar(FILE *cF, int* lc);
-Token createConstantToken(FILE* cF, char c, int* lc);
-Token createKeywordOrIdentifierToken(FILE* cF, char c, int* lc);
+token_t next_token(FILE* cF, int* lc);
+int advance_char(FILE *cF, int* lc);
+int retreat_char(FILE *cF, int* lc, int* retreat_data);
+token_t create_constant_token(FILE* cF, char c, int* lc);
+token_t create_keyword_or_identifier_token(FILE* cF, char c, int* lc);
 
 
 

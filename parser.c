@@ -10,17 +10,20 @@
 #define DEFAULT_NODE_CAPACITY 20
 
 
+
+
+
 int main(int argc, char* argv[]){
 
 	FILE *cF = fopen(argv[1], "r");
 
 	int lc[2] = {1, 1};
 
-	TokenStackNode* head = tokenStack(cF, lc);
+	token_stack_node_t* head = token_stack(cF, lc);
 
-	ASTNode ast = application(&head);
+	ast_node_t ast = application(&head);
 
-	printAST(ast);
+	print_ast(ast);
 
 	return 0;
 
@@ -29,29 +32,32 @@ int main(int argc, char* argv[]){
 }
 
 
-void printAST(ASTNode ast){
+void print_ast(ast_node_t ast){
 
 
-	switch(ast.childAST){
-		case LIT:{
-				 printLit(ast.value.primary);}
+	switch(ast.type){
+		case AST_PRIMARY:{
+				 puts("primary");}
 			 break;
-		case KEY:{
+		case AST_KEYWORD:{
 				 printf("KEYWORD\n");}
 			 break;
-		case BIN:{
-				 printAST(*ast.value.binaryAST.left);
-				 printf("%c\n", ast.value.binaryAST.operator);
-				 printAST(*ast.value.binaryAST.right);}
+		case AST_BINARY:{
+				 print_ast(*ast.as.binary_tree.left);
+				 printf("%c\n", ast.as.binary_tree.operator);
+				 print_ast(*ast.as.binary_tree.right);}
 			 break;
-		case VEC:{
-				 const int size = ast.value.vecAST.vecAST.size;
+		case AST_VECTOR:{
+				 const int size = ast.as.vector_tree.size;
 
 				 for(int i = 0; i < size; i++){
 
-					 printAST(**(ast.value.vecAST.children + i * sizeof(ASTNode*)));
+					 print_ast(**(ast.as.vector_tree.children + i * sizeof(ast_node_t*)));
 
 				 }}
+			 break;
+		default:
+			 puts("no ast node type enum assigned!");
 			 break;
 
 	}
@@ -59,19 +65,22 @@ void printAST(ASTNode ast){
 }
 
 
-void printLit(Primary primary){
+void print_primary(primary_t primary){
 
 
-	switch(primary.primaryType){
-		case LITERAL:{
-				     const int x = primary.primary.literal.literalVal.val;
+	switch(primary.type){
+		case PRIMARY_LITERAL:{
+				     const int x = primary.as.literal.as.integer;
 				     printf("%d\n", x);}
 			     break;
-		case IDENTIFIER:{
+		case PRIMARY_IDENTIFIER:{
 					printf("IDENTIFIER\n");}
 				break;
-		case FUNC_CALL:{
+		case PRIMARY_FUNC_CALL:{
 				       printf("FUNC_CALL\n");}
+			       break;
+		default:
+			       puts("no primary enum type assigned!");
 			       break;
 
 	}
@@ -81,57 +90,66 @@ void printLit(Primary primary){
 
 
 
-ASTNode ast_node_vec_children(){
+
+ast_node_t ast_primary_node(){
+
+	ast_node_t ast_node;
+	ast_node.type = AST_PRIMARY;
+	ast_node.as.primary.as.literal.as.integer = -1;
+	return ast_node;
+}
 
 
-	ASTNode astNode;
-	astNode.childAST = VEC;
-	astNode.value.vecAST.size = 0;
-	astNode.value.vecASt.capacity = DEFAULT_NODE_CAPACITY;
-	astNode.value.vecAST.children = malloc(sizeof(ASTNode*));
-	return astNode;
+ast_node_t ast_keyword_node(){
+
+	ast_node_t ast_node;
+	ast_node.type = AST_KEYWORD;
+	return ast_node;
+
+}
+
+
+ast_node_t ast_vector_tree_node(){
+
+
+	ast_node_t ast_node;
+	ast_node.type = AST_VECTOR;
+	ast_node.as.vector_tree.size = 0;
+	ast_node.as.vector_tree.capacity = DEFAULT_NODE_CAPACITY;
+	ast_node.as.vector_tree.children = malloc(sizeof(ast_node_t*));
+	return ast_node;
 
 
 }
 
 
-ASTNode ast_node_bin_children(){
+ast_node_t ast_binary_tree_node(){
 
-	ASTNode astNode;
-	astNode.childAST = BIN;
-	astNode.value.binaryAST = (BinaryAST){NULL, '\0', NULL};
-	return astNode;
+	ast_node_t ast_node;
+	ast_node.type = AST_BINARY;
+	return ast_node;
 
 
 }
 
 
-ASTNode ast_node_lit_children(){
 
-	ASTNode astNode;
-	astNode.childAST = LIT;
-	astNode.value.primary.primary.literal.literalVal.val = -1;
-	return astNode;
-}
+void vec_node_add_right_child(ast_node_t* parent, ast_node_t child){
 
+	if(parent->type == AST_VECTOR){
 
-
-void add_right_child_vec(ASTNode* parent, ASTNode child){
-
-	if(parent->childAST == VEC){
-
-		ASTNode** vec = parent->value.vecAST.children;
-		ASTNode* childPtr = malloc(sizeof(child));
+		ast_node_t** vec = parent->as.vector_tree.children;
+		ast_node_t* childPtr = malloc(sizeof(child));
 		*childPtr = child;
 
-		if(vec != NULL && parent->value.vecAST.size <= parent->value.vecAST.capacity){
+		if(vec != NULL && parent->as.vector_tree.size <= parent->as.vector_tree.capacity){
 
 
-			vec = realloc(vec, ++(parent->value.vecAST.size) * sizeof(ASTNode*));
+			vec = realloc(vec, ++(parent->as.vector_tree.size) * sizeof(ast_node_t*));
 
-			const int size = parent->value.vecAST.size;
+			const int size = parent->as.vector_tree.size;
 
-			memcpy(vec + (size - 1) * sizeof(ASTNode*), &childPtr, sizeof(ASTNode*));
+			memcpy(vec + (size - 1) * sizeof(ast_node_t*), &childPtr, sizeof(ast_node_t*));
 
 
 		}else{
@@ -144,28 +162,28 @@ void add_right_child_vec(ASTNode* parent, ASTNode child){
 }
 
 
-TokenStackNode* tokenStack(File* cF, int* lc){
+token_stack_node_t* token_stack(FILE* cF, int* lc){
 
 
-	TokenStackNode* curr = (TokenStackNode*)malloc(sizeof(TokenStackNode));
+	token_stack_node_t* curr = (token_stack_node_t*)malloc(sizeof(token_stack_node_t));
 
-	curr->token = (Token*)malloc(sizeof(token));
-	*(curr->token) = nextToken(cF, lc);
+	curr->token = (token_t*)malloc(sizeof(token_t));
+	*(curr->token) = next_token(cF, lc);
 	curr->prev = NULL;
 
-	TokenStackNode* head = curr;
+	token_stack_node_t* head = curr;
 
 	while(curr->token->type != TOK_EOF){
 
-		TokenStackNode* tempPrev = curr;
+		token_stack_node_t* temp_prev = curr;
 
-		curr->next = (TokenStackNode*)malloc(sizeof(TokenStackNode));
+		curr->next = (token_stack_node_t*)malloc(sizeof(token_stack_node_t));
 
 		curr = curr->next;
-		curr->token = (Token*)malloc(sizeof(Token));
-		*(curr->token) = nextToken(cF, lc);
+		curr->token = (token_t*)malloc(sizeof(token_t));
+		*(curr->token) = next_token(cF, lc);
 
-		curr->prev = tempPrev;
+		curr->prev = temp_prev;
 
 
 	}
@@ -180,9 +198,9 @@ TokenStackNode* tokenStack(File* cF, int* lc){
 
 
 
-ASTNode application(TokenStackNode** curr){
+ast_node_t application(token_stack_node_t** curr){
 
-	return functionList(curr);
+	return function_list(curr);
 
 
 }
@@ -190,48 +208,49 @@ ASTNode application(TokenStackNode** curr){
 
 
 
-ASTNode functionList(TokenStackNode** curr){
+ast_node_t function_list(token_stack_node_t** curr){
 
-	ASTNode functionList = ast_node_vec_children();
+	ast_node_t function_list = ast_vector_tree_node();
 
-	while(match(curr, 1, TOK_INT_TYPE) && match(curr, 1, TOK_IDENTIFIER) && match(curr, 1, TOK_LPARENTH) && match(curr, 1, TOK_RPARENTH) && match(curr, 1, TOK_LBRACE)){
+	while(match_token(curr, 1, TOK_INT_TYPE) && 
+			match_token(curr, 1, TOK_IDENTIFIER) && 
+			match_token(curr, 1, TOK_LPARENTH) && 
+			match_token(curr, 1, TOK_RPARENTH) && match_token(curr, 1, TOK_LBRACE)){
 
-		printf("current token: %s\n", (**curr).token->stringVal);
-		ASTNode func = function(curr);
-		add_right_child_vec(&functionList, func);
+		ast_node_t func = function(curr);
+		vec_node_add_right_child(&function_list, func);
+		printf("current token: %s\n", (**curr).token->string);
 
 	}
 
-	return functionList;
+	return function_list;
 
 }
 
 
-ASTNode function(TokenStackNode** curr){
+ast_node_t function(token_stack_node_t** curr){
 
-	return statementList(curr);
+	return statement_list(curr);
 
 
 }
 
 
 
-ASTNode statementList(TokenStackNode** curr){
+ast_node_t statement_list(token_stack_node_t** curr){
 
-	ASTNode statementList = ast_node_vec_children();
-	ASTNode stement;
+	ast_node_t statement_list = ast_vector_tree_node();
 
-	if(!match(curr, 1, TOK_RBRACE)){
+	if(!match_token(curr, 1, TOK_RBRACE)){
 
+		ast_node_t statement_var = statement(curr);
+		vec_node_add_right_child(&statement_list, statement_var);
 
-		stement = statement(curr);
-		add_right_child_vec(&statementList, stement);
+		while(match_token(curr, 1, TOK_SEMI) && !match_token(curr, 1, TOK_RBRACE)){
 
-		while(match(curr, 1, TOK_SEMI) && !match(curr, 1, TOK_RBRACE)){
+			statement_var = statement(curr);
 
-			stement = statement(curr);
-
-			add_right_child_vec(&statementList, stement);
+			vec_node_add_right_child(&statement_list, statement_var);
 
 		}
 
@@ -240,7 +259,7 @@ ASTNode statementList(TokenStackNode** curr){
 
 	}
 
-	return statementList;
+	return statement_list;
 
 
 
@@ -248,35 +267,35 @@ ASTNode statementList(TokenStackNode** curr){
 
 
 
-ASTNode statement(TokenStackNode** curr){
+ast_node_t statement(token_stack_node_t** curr){
 
-	ASTNode statement = ast_node_vec_children();
+	ast_node_t statement = ast_vector_tree_node();
 
-	while(match(curr, 2, TOK_RETURN, TOK_INT_TYPE)){
+	while(match_token(curr, 2, TOK_RETURN, TOK_INT_TYPE)){
 
-		ASTNode keywordNode;
-		keywordNode.childAST = KEY;
+		ast_node_t keyword_node;
+		keyword_node.type = AST_KEYWORD;
 
 		switch(((*curr)->prev->token->type)){
 
 			case TOK_RETURN:
-				keywordNode.value.keyword = KEYW_RETURN;
+				keyword_node.as.keyword = KEYW_RETURN;
 				break;
 			case TOK_INT_TYPE:
-				keywordNode.value.keyword = KEYW_INT;
+				keyword_node.as.keyword = KEYW_INT;
 				break;
 
 		}
 
-		add_right_child_vec(&statement, keywordNode);
+		vec_node_add_right_child(&statement, keyword_node);
 
 
 
 	}
 
-	ASTNode expr = expression(curr);
+	ast_node_t expression_var = expression(curr);
 
-	add_right_child_vec(&statement, expr);
+	vec_node_add_right_child(&statement, expression_var);
 
 
 	return statement;
@@ -287,7 +306,7 @@ ASTNode statement(TokenStackNode** curr){
 
 
 
-ASTNode expression(TokenStackNode** curr){
+ast_node_t expression(token_stack_node_t** curr){
 
 
 	return equality(curr);
@@ -297,7 +316,7 @@ ASTNode expression(TokenStackNode** curr){
 }
 
 
-ASTNode equality(TokenStackNode** curr){
+ast_node_t equality(token_stack_node_t** curr){
 
 
 	return comparison(curr);
@@ -307,7 +326,7 @@ ASTNode equality(TokenStackNode** curr){
 }
 
 
-ASTNode comparison(TokenStackNode** curr){
+ast_node_t comparison(token_stack_node_t** curr){
 
 
 	return term(curr);
@@ -317,30 +336,29 @@ ASTNode comparison(TokenStackNode** curr){
 }
 
 
-ASTNode term(TokenStackNode** curr){
+ast_node_t term(token_stack_node_t** curr){
 
+	ast_node_t left = factor(curr);
 
-	ASTNode left = factor(curr);
+	left.type = AST_PRIMARY;
 
-	left.childAST = LIT;
+	while(match_token(curr, 1, TOK_PLUS)){
 
-	while(match(curr, 1, TOK_PLUS)){
+		left.type = AST_PRIMARY;
+		char operator = ((*curr)->prev->token->string)[0];
+		
+		ast_node_t right = factor(curr);
+		right.type = AST_PRIMARY;
 
-		left.childAST = LIT;
-		char operator = ((*curr)->prev->token->stringVal)[0];
-
-		ASTNode right = factor(curr);
-		right.childAST = LIT;
-
-		ASTNode* rightPtr = malloc(sizeof(right));
-		ASTNode* leftPtr = malloc(sizeof(left));
+		ast_node_t* rightPtr = malloc(sizeof(right));
+		ast_node_t* leftPtr = malloc(sizeof(left));
 		*leftPtr = left;
 		*rightPtr = right;
 
-		ASTNode newLeft;
-		newLeft.value.binaryAST = (BinaryAST){leftPtr, operator, rightPtr};
-		newLeft.childAST = BIN;
-		left = newLeft;
+		ast_node_t new_left;
+		new_left.as.binary_tree = (binary_tree_t){leftPtr, operator, rightPtr};
+		new_left.type = AST_BINARY;
+		left = new_left;
 
 
 	}
@@ -355,7 +373,7 @@ ASTNode term(TokenStackNode** curr){
 
 
 
-ASTNode factor(TokenStackNode** curr){
+ast_node_t factor(token_stack_node_t** curr){
 
 	return unary(curr);
 
@@ -363,7 +381,7 @@ ASTNode factor(TokenStackNode** curr){
 }
 
 
-ASTNode unary(TokenStackNode** curr){
+ast_node_t unary(token_stack_node_t** curr){
 
 	return primary(curr);
 
@@ -371,39 +389,42 @@ ASTNode unary(TokenStackNode** curr){
 }
 
 
-ASTNode primary(TokenStackNode** curr){
+ast_node_t primary(token_stack_node_t** curr){
 
-	ASTNode ast;
+	ast_node_t ast;
 
 	if((*curr)->token->type == TOK_IDENTIFIER){
 
-		if((*curr)->token->type == TOK_LPARENTH && peek(peek(*curr))->token->type == TOK_RPARENTH){
+		if(peek_token(*curr)->token->type == TOK_LPARENTH && 
+				(peek_token(peek_token(*curr))->token->type) == TOK_RPARENTH){
 
-			ast.value.primary.primaryType = FUNC_CALL;
-			ast.value.primary.primaryType = FUNC_CALL;
-			ast.value.primary.primary.funcCall = (FuncCall){};
-			advance(curr);
-			advance(curr);
+			printf("the token responsible: %s\n", (**curr).token->string);
+			ast.as.primary.type = PRIMARY_FUNC_CALL;
+			ast.as.primary.as.func_call = (func_call_t){};
+			pop_token(curr);
+			pop_token(curr);
 
 		}
 		else{
-
-			ast.value.primary.primaryType = IDENTIFIER;
-			ast.value.primary.identifier = (Identifier){};
+			printf("identifier: %s\n", (**curr).token->string);
+			ast.as.primary.type = PRIMARY_IDENTIFIER;
+			ast.as.primary.as.identifier = (identifier_t){};
 
 		}
 
 	}
 	else{
 
-		ast.value.primary.primaryType = LITERAL;
-		char* primaryStr = (*curr)->token->stringVal;
-		int primaryVal = strToInt(primaryStr);
+		ast.as.primary.type = PRIMARY_LITERAL;
+		char* primary_str = (*curr)->token->string;
+		int value = str_to_int(primary_str);
 
-		ast.value.primary.primary.literal.literalVal.val = primaryVal;
+		ast.as.primary.as.literal.as.integer = value;
+
+
 	}
 
-	advance(curr);
+	pop_token(curr);	
 
 	return ast;
 
@@ -412,30 +433,30 @@ ASTNode primary(TokenStackNode** curr){
 
 
 
-int strToInt(char* str){
+int str_to_int(char* str){
 
 
 	char* end;
 	errno = 0;
 	long v = strtol(str, &end, 10);
-	int literalValue = (int)v;
+	int literal_value = (int)v;
 
-	char firstDigit = str[0];
+	char first_digit = str[0];
 
-	if(literalValue == 0 && firstDigit != '0'){
+	if(literal_value == 0 && first_digit != '0'){
 
-		fprintf(stderr, "unaccounted token: %c\n", firstDigit);
+		fprintf(stderr, "unaccounted token: %c\n", first_digit);
 
 	}
 
-	return literalValue;
+	return literal_value;
 
 
 }
 
 
 
-bool match(TokenStackNode** curr, int n, ...){
+bool match_token(token_stack_node_t** curr, int n, ...){
 
 
 	va_list args;
@@ -445,11 +466,11 @@ bool match(TokenStackNode** curr, int n, ...){
 	for(int i = 0; i < n; i++){
 
 
-		TokenType tokenType = va_arg(args, TokenType);
+		token_type_t token_type = va_arg(args, token_type_t);
 
-		if(check(*curr, tokenType)){
+		if(check_token(*curr, token_type)){
 
-			advance(curr);
+			pop_token(curr);
 			va_end(args);
 			return true;
 
@@ -475,25 +496,24 @@ bool match(TokenStackNode** curr, int n, ...){
 
 
 
-bool check(TokenStackNode* curr, TokenType type){
+bool check_token(token_stack_node_t* curr, token_type_t type){
 
-	Token currToken = *(curr->token);
+	token_t curr_token = *(curr->token);
 
-	return (currToken.type == type);
-
-}
-
-
-void advance(TokenStackNode** curr){
-
-
-	*curr = peek(*curr);
+	return (curr_token.type == type);
 
 }
 
 
+void pop_token(token_stack_node_t** curr){
 
-TokenStackNode* peek(TokenStackNode* curr){
+	*curr = peek_token(*curr);
+
+}
+
+
+
+token_stack_node_t* peek_token(token_stack_node_t* curr){
 
 	return curr->next;
 

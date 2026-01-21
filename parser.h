@@ -6,186 +6,159 @@
 #include "lexer.h"
 
 
-typedef struct ASTNode ASTNode;
+typedef struct token_stack_node{
 
-typedef struct TokenStackNode{
+	token_t* token;
+	struct token_stack_node* prev;
+	struct token_stack_node* next;
 
-	struct TokenStackNode* prev;
-	struct TokenStackNode* next;
-	Token* token;
-
-}TokenStackNode;
+}token_stack_node_t;
 
 
-
-typedef struct{
-
-	struct ASTNode* left;
-	char operator;
-	struct ASTNode* right;
-
-}BinaryAST;
-
-typedef struct{
-
-	ASTNode** children;
-	int size;
-	int capacity;
-
-}VecAST;
-
-enum ChildAST{
-
-	VEC,
-	BIN,
-	LIT,
-	KEY
-
-};
+typedef struct ast_node ast_node_t;
 
 
-typedef struct{
+typedef enum ast_node_type{
+
+	AST_VECTOR,
+	AST_BINARY,
+	AST_PRIMARY,
+	AST_KEYWORD
+
+}ast_node_type_t;
 
 
-
-	union{
-
-
-		int val;
-
-	}literalVal;
-
-
-}Literal;
-
-
-
-
-typedef struct{
-
-
-
-
-
-
-}Identifier;
-
-
-
-
-typedef struct{
-
-
-
-}FuncCall;
-
-
-
-
-
-
-
-enum PrimaryType{
-
-
-	LITERAL,
-	IDENTIFIER,
-	FUNC_CALL
-
-};
-
-
-
-
-typedef struct Primary{
-
-	enum PrimaryType primaryType;
-
-	union{
-
-		Literal literal;
-		Identifier identifier;
-		FuncCall funcCall;
-	}primary;
-
-
-}Primary;
-
-enum Keyword{
+typedef enum keyword{
 
 	KEYW_RETURN,
 	KEYW_INT
-};
+
+}keyword_t;
 
 
-typedef struct ASTNode{
+
+typedef enum primary_type{
+
+	PRIMARY_LITERAL,
+	PRIMARY_IDENTIFIER,
+	PRIMARY_FUNC_CALL
+
+}primary_type_t;
 
 
-	enum ChildAST childAST;
+typedef struct literal{
 
 	union{
 
-		enum Keyword keyword;
+		int integer;
 
-		Primary primary;
+	}as;
 
-		VecAST vecAST;
-
-		BinaryAST binaryAST;
+}literal_t;
 
 
+typedef struct identifier{
 
-	}value;
-
-}ASTNode;
-
+}identifier_t;
 
 
+typedef struct func_call{
+
+}func_call_t;
+
+
+typedef struct primary{
+
+	primary_type_t type;
+
+	union{
+
+		literal_t literal;
+		identifier_t identifier;
+		func_call_t func_call;
+
+	}as;
+
+
+}primary_t;
+
+
+
+typedef struct vector_tree{
+
+	ast_node_t** children;
+	int size;
+	int capacity;
+
+}vector_tree_t;
+
+
+typedef struct binary_tree{
+
+	ast_node_t* left;
+	char operator;
+	ast_node_t* right;
+
+}binary_tree_t;
+
+
+
+typedef struct ast_node{
+
+
+	ast_node_type_t type;
+
+	union{
+
+		keyword_t keyword;
+
+		primary_t primary;
+
+		vector_tree_t vector_tree;
+
+		binary_tree_t binary_tree;
+
+	}as;
+
+}ast_node_t;
 
 
 
 
+token_stack_node_t* token_stack(FILE* cF, int* lc);
+
+void print_ast(ast_node_t ast);
+void print_primary(primary_t primary);
 
 
+ast_node_t ast_keyword_node();
+ast_node_t ast_vector_tree_node();
+ast_node_t ast_binary_tree_node();
+ast_node_t ast_primary_node();
 
+void vec_node_add_right_child(ast_node_t* parent, ast_node_t child);
 
+ast_node_t application(token_stack_node_t** curr);
+ast_node_t function_list(token_stack_node_t** curr);
+ast_node_t function(token_stack_node_t** curr);
+ast_node_t statement_list(token_stack_node_t** curr);
+ast_node_t statement(token_stack_node_t** curr);
+ast_node_t expression(token_stack_node_t** curr);
+ast_node_t equality(token_stack_node_t** curr);
+ast_node_t comparison(token_stack_node_t** curr);
+ast_node_t term(token_stack_node_t** curr);
+ast_node_t factor(token_stack_node_t** curr);
+ast_node_t unary(token_stack_node_t** curr);
+ast_node_t primary(token_stack_node_t** curr);
 
-TokenStackNode* tokenStack(FILE* cF, int* lc);
+int str_to_int(char* str);
 
-void printAST(ASTNode ast);
-void printLit(Primary primary);
-void printTerm(ASTNode** ast);
+bool match_token(token_stack_node_t** curr, int n, ...);
+bool check_token(token_stack_node_t* curr, token_type_t type);
 
-ASTNode ast_node_vec_children();
+void pop_token(token_stack_node_t** curr);
+token_stack_node_t* peek_token(token_stack_node_t* curr);
 
-ASTNode ast_node_bin_children();
-
-ASTNode ast_node_lit_child();
-
-void add_right_child_vec(ASTNode* parent, ASTNode child);
-
-ASTNode application(TokenStackNode** curr);
-ASTNode functionList(TokenStackNode** curr);
-ASTNode function(TokenStackNode** curr);
-ASTNode statementList(TokenStackNode** curr);
-ASTNode statement(TokenStackNode** curr);
-ASTNode expression(TokenStackNode** curr);
-ASTNode equality(TokenStackNode** curr);
-ASTNode comparison(TokenStackNode** curr);
-ASTNode term(TokenStackNode** curr);
-ASTNode factor(TokenStackNode** curr);
-ASTNode unary(TokenStackNode** curr);
-ASTNode primary(TokenStackNode** curr);
-
-int strToInt(char* str);
-
-bool match(TokenStackNode** curr, int n, ...);
-
-bool check(TokenStackNode* curr, TokenType type);
-
-void advance(TokenStackNode** curr);
-
-TokenStackNode* peek(TokenStackNode* curr);
 
 #endif
 
