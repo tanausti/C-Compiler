@@ -73,10 +73,11 @@ void function_to_llvm(function_t function, LLVMContextRef context, LLVMModuleRef
 
 	const char* function_name = function_prototype.function_name;
 	
-	LLVMValueRef func = LLVMAddFunction(module, function_name, int_type);
+	LLVMValueRef func = LLVMAddFunction(module, function_name, func_type);
 
 
 	LLVMBasicBlockRef entry = LLVMAppendBasicBlockInContext(context, func, "entry");
+	LLVMPositionBuilderAtEnd(builder, entry);
 	const vector_tree_t vector_tree = function.statement_list.vector_tree;
 	const int size = vector_tree.size;
 

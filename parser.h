@@ -224,8 +224,8 @@ ast_node_t primary(token_stack_node_t** curr);
 
 int str_to_int(char* str);
 
-bool match_token(token_stack_node_t** curr, int n, ...);
-bool check_token(token_stack_node_t* curr, token_type_t type);
+int match_token(token_stack_node_t** curr, int n, ...);
+int check_token(token_stack_node_t* curr, token_type_t type);
 
 token_stack_node_t* pop_token(token_stack_node_t** curr);
 token_stack_node_t* peek_token(token_stack_node_t* curr);

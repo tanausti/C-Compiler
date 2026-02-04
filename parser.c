@@ -431,7 +431,7 @@ int str_to_int(char* str){
 
 
 
-bool match_token(token_stack_node_t** curr, int n, ...){
+int match_token(token_stack_node_t** curr, int n, ...){
 
 
 	va_list args;
@@ -471,7 +471,7 @@ bool match_token(token_stack_node_t** curr, int n, ...){
 
 
 
-bool check_token(token_stack_node_t* curr, token_type_t type){
+int check_token(token_stack_node_t* curr, token_type_t type){
 
 	token_t curr_token = *(curr->token);
 
