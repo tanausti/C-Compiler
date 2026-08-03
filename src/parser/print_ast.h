@@ -2,7 +2,6 @@
 #define PRINT_AST_H
 
 #include <stdio.h>
-#include <stdbool.h>
 #include "ast.h"
 
 

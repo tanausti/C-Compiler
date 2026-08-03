@@ -16,11 +16,12 @@ SOURCES = \
 
 OBJECTS = $(SOURCES:.c=.o)
 
-TARGET = compiler
+TARGET = bin/compiler
 
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
+	mkdir -p bin
 	$(CC) $(OBJECTS) $(LLVM_FLAGS) -o $(TARGET)
 
 %.o: %.c
