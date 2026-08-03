@@ -1,5 +1,33 @@
-lexer_console_test: lexer_console_test.c ../test_harness.c ../../src/lexer/lexer.c 
-	gcc lexer_console_test.c ../test_harness.c ../../src/lexer/lexer.c -o lexer_console_test
+CC ?= gcc
 
-lexer_console_test_debug: lexer_console_test.c ../test_harness.c ../../src/lexer/lexer.c 
-	gcc lexer_console_test.c ../test_harness.c ../../src/lexer/lexer.c -Wall -Wextra -g -o lexer_console_test
+CFLAGS = -Wall -Wextra
+DEBUG_FLAGS = -g
+
+SOURCES = \
+    lexer_console_test.c \
+    ../test_harness.c \
+    ../../src/lexer/lexer.c
+
+OBJECTS = $(SOURCES:.c=.o)
+
+TARGET = lexer_console_test
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(TARGET)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: clean $(TARGET)
+
+clang:
+	$(MAKE) CC=clang
+
+clang-debug:
+	$(MAKE) CC=clang debug
+
+clean:
+	rm -f $(OBJECTS) $(TARGET)
