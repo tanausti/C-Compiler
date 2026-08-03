@@ -1,10 +1,11 @@
 # Kiln
+
 Kiln is a compiler for a subset of the C programming language, implemented in C, that generates LLVM IR. It includes the core stages of a modern compiler, including lexical analysis, recursive-descent parsing, abstract syntax tree (AST) construction, and LLVM IR generation. The generated LLVM IR can be compiled into native executables using the LLVM toolchain.
 
-This project was developed to explore systems programming and language design while creating a modular architecture that can later be extended to support additional features of the C language.
-
+This project was developed to explore systems programming and language design while creating a modular compiler architecture that can later be extended with additional C language features.
 
 ---
+
 ## Requirements
 
 Kiln requires the following tools:
@@ -22,18 +23,24 @@ sudo apt install build-essential llvm clang libllvm-dev
 ```
 
 On Arch Linux:
+
 ```bash
 sudo pacman -S base-devel llvm clang
 ```
+
 On macOS:
+
 ```bash
 brew install llvm
 ```
+
+---
+
 ## Features
 
 * Compiles a subset of the C programming language
 * Lexical analysis (tokenization)
-* Recursive descent parser
+* Recursive-descent parser
 * Abstract syntax tree (AST) generation
 * LLVM IR code generation
 * Lex and parse error reporting
@@ -43,9 +50,9 @@ brew install llvm
 
 ## Supported Language Features
 
-Kiln currently supports the following language features:
+Kiln currently supports:
 
-* 32 bit int literals
+* 32-bit integer literals
 * Variable declarations and assignments
 * Arithmetic expressions
 * `if` statements
@@ -53,6 +60,7 @@ Kiln currently supports the following language features:
 * Function calls
 * `return` statements
 
+---
 
 ## Compiler Pipeline
 
@@ -74,9 +82,7 @@ Abstract Syntax Tree (AST)
 LLVM IR Generation
 ```
 
-The lexer converts source code into a stream of tokens. The parser consumes these tokens to construct an abstract syntax tree representing the program structure. The backend traverses the AST and emits LLVM Intermediate Representation (IR), which can then be compiled into a native executable using LLVM tools such as `clang`.
-
----
+The lexer converts source code into tokens. The parser consumes these tokens and constructs an abstract syntax tree representing the program structure. The backend traverses the AST and generates LLVM Intermediate Representation (IR), which can then be compiled into a native executable using LLVM tools such as `clang`.
 
 ---
 
@@ -86,7 +92,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/tanausti/Kiln.git
-cd kiln
+cd Kiln
 ```
 
 Build the compiler:
@@ -95,7 +101,47 @@ Build the compiler:
 make
 ```
 
-The compiler executable will be generated in the `bin/` directory.
+The compiler executable will be generated in:
+
+```text
+bin/kiln
+```
+
+---
+
+## Build Options
+
+Kiln supports both GCC and Clang builds.
+
+Build with GCC:
+
+```bash
+make
+```
+
+Build with Clang:
+
+```bash
+make clang
+```
+
+Build a debug version:
+
+```bash
+make debug
+```
+
+Build a debug version with Clang:
+
+```bash
+make clang-debug
+```
+
+Clean build files:
+
+```bash
+make clean
+```
 
 ---
 
@@ -142,8 +188,15 @@ int main() {
 }
 ```
 
-Output (`add.ll`):
-```c
+Generate LLVM IR:
+
+```bash
+./bin/kiln add.c add.ll
+```
+
+Example output (`add.ll`):
+
+```llvm
 ; ModuleID = 'add.ll'
 source_filename = "add.ll"
 
@@ -173,12 +226,6 @@ end:                                              ; preds = %entry
 }
 ```
 
-Generate LLVM IR:
-
-```bash
-./bin/kiln add.c add.ll
-```
-
 Compile and run:
 
 ```bash
@@ -190,44 +237,49 @@ clang add.ll -o add
 
 ## Error Reporting
 
-Kiln reports lex and parse errors with source locations.
+Kiln reports lex and pars errors with source locations.
 
 Example:
 
+
+
 ```text
-Syntax error (7, 9): expected ';' at end of statement.
+Syntax error (2, 12): expected ';' at end of statement.
 ```
 
 ---
 
 ## Testing
+
 Kiln uses a custom regression test harness to verify compiler functionality.
 
-Tests are organized by compiler component and compare expected output files against compiler-generated output, making it straightforward to verify existing behavior as new language features are added. Each test suite processes a collection of input files, generates the corresponding output files, and then invokes the test harness to compare the generated results against the expected outputs.
-
-
-
-The test infrastructure includes:
+Tests are organized by compiler component. Each test suite uses:
 
 * Shared testing harness
-* Individual test suites
-* A set of inputs and expected outputs for each test suite
-* Independent Makefiles for each suite
+* Individual component test suites
+* Input programs (`input#.c`)
+* Expected output files (`expected_out#.<ext>`)
+* Generated output files (`actual_out#.<ext>`)
+* Independent Makefiles
 
-Compile a test suite for a compiler component:
+The test harness compares each generated `actual_out#.<ext>` file against its corresponding `expected_out#.<ext>` file.
+
+To add a new test, create a numbered input file (`input#.c`) and a matching expected output file (`expected_out#.<ext>`). Run the test suite with the highest test number, and the harness will automatically execute all tests from `1` through that number and compare the generated outputs against the expected outputs.
+
+Compile a test suite:
 
 ```bash
-cd test/parser
+cd test/ir
 make
+
 ```
 
-Run tests:
-
+Run a test suite:
 ```bash
-./test 5
+# Runs all tests numbered 1-5
+./ir_test 5
 ```
 
-The tests in The test harness executes every test from `1` through the specified test number and compares the generated output against the expected output.
 
 ---
 
