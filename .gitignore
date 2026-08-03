@@ -6,12 +6,6 @@
 
 TODO.txt
 
-test/ir/actual_out/*
-test/parser_console/actual_out/*
-test/parser_ast/actual_out/*
-test/lexer_tokens/actual_out/*
-test/lexer_console/actual_out/*
-
 test/ir/ir_test
 test/parser_console/parser_console_test
 test/parser_ast/parser_ast_test
