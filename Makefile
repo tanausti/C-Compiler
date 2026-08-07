@@ -14,7 +14,12 @@ SOURCES = \
     src/parser/token_stack.c \
     src/ir/ir.c
 
-OBJECTS = $(SOURCES:.c=.o)
+
+OBJECTS = $(SOURCES:src/%.c=build/%.o)
+
+build/%.o: src/%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(LLVM_FLAGS) -c $< -o $@
 
 TARGET = bin/compiler
 
@@ -24,8 +29,8 @@ $(TARGET): $(OBJECTS)
 	mkdir -p bin
 	$(CC) $(OBJECTS) $(LLVM_FLAGS) -o $(TARGET)
 
-%.o: %.c
-	$(CC) $(CFLAGS) $(LLVM_FLAGS) -c $< -o $@
+
+.PHONY: all debug clang clang-debug clean
 
 debug: CFLAGS += $(DEBUG_FLAGS)
 debug: clean $(TARGET)
