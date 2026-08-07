@@ -495,15 +495,15 @@ void consume_token(token_stack_node_t** curr, token_type_t type, char* error_mes
 
 void synchronize(token_stack_node_t** curr){
 
-	if(!check_token(curr, TOK_EOF))
-	{
+	token_t previous_token = *((**curr).token);
+	
+	if(!check_token(curr, TOK_EOF)){
 		pop_token_node(curr);
 	}
+	
 
 	while(!check_token(curr, TOK_EOF)){
-
-		token_t previous_token = *((**curr).token);
-
+	
 		if(previous_token.type == TOK_SEMI){
 			return;
 		}
@@ -520,6 +520,10 @@ void synchronize(token_stack_node_t** curr){
 		pop_token_node(curr);
 
 	}
+
+	
+	previous_token = *((**curr).token);
+
 
 }
 

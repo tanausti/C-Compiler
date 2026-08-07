@@ -1,6 +1,1 @@
-Syntax error (1, 10): expected token '('
-Syntax error (5, 2): expected token '{'
-Syntax error (12, 10): expected token '{'
-Syntax error (18, 10): expected ';' at end of statement.
-Syntax error (21, 18): expected primary to close expression.
-Syntax error (21, 18): expected ';' at end of statement.
+Syntax error (6, 10): expected ';' at end of statement.
