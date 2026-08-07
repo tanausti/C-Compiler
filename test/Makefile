@@ -44,25 +44,27 @@ PARSER_CONSOLE_SOURCES = \
 	../src/lexer/lexer.c
 
 TESTS = \
-	$(BUILD_DIR)/ir_test/ir_test \
-	$(BUILD_DIR)/lexer_console_test/lexer_console_test \
-	$(BUILD_DIR)/lexer_tokens_test/lexer_tokens_test \
-	$(BUILD_DIR)/parser_ast_test/parser_ast_test \
-	$(BUILD_DIR)/parser_console_test/parser_console_test
+	$(BUILD_DIR)/ir/ir_test \
+	$(BUILD_DIR)/lexer_console/lexer_console_test \
+	$(BUILD_DIR)/lexer_tokens/lexer_tokens_test \
+	$(BUILD_DIR)/parser_ast/parser_ast_test \
+	$(BUILD_DIR)/parser_console/parser_console_test
 
-.PHONY: all ir lexer_console lexer_tokens parser_ast parser_console debug clang clang-debug clean
+.PHONY: all ir lexer_console lexer_tokens parser_ast parser_console \
+	run_ir run_lexer_console run_lexer_tokens run_parser_ast run_parser_console \
+	debug clang clang-debug clean
 
 all: $(TESTS)
 
-ir: $(BUILD_DIR)/ir_test/ir_test
+ir: $(BUILD_DIR)/ir/ir_test
 
-lexer_console: $(BUILD_DIR)/lexer_console_test/lexer_console_test
+lexer_console: $(BUILD_DIR)/lexer_console/lexer_console_test
 
-lexer_tokens: $(BUILD_DIR)/lexer_tokens_test/lexer_tokens_test
+lexer_tokens: $(BUILD_DIR)/lexer_tokens/lexer_tokens_test
 
-parser_ast: $(BUILD_DIR)/parser_ast_test/parser_ast_test
+parser_ast: $(BUILD_DIR)/parser_ast/parser_ast_test
 
-parser_console: $(BUILD_DIR)/parser_console_test/parser_console_test
+parser_console: $(BUILD_DIR)/parser_console/parser_console_test
 
 $(BUILD_DIR)/ir/ir_test: $(IR_SOURCES)
 	mkdir -p $(dir $@)
@@ -83,3 +85,30 @@ $(BUILD_DIR)/parser_ast/parser_ast_test: $(PARSER_AST_SOURCES)
 $(BUILD_DIR)/parser_console/parser_console_test: $(PARSER_CONSOLE_SOURCES)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(PARSER_CONSOLE_SOURCES) -o $@
+
+run_ir: $(BUILD_DIR)/ir/ir_test
+	cd ir && ../../build/ir/ir_test
+
+run_lexer_console: $(BUILD_DIR)/lexer_console/lexer_console_test
+	cd lexer_console && ../../build/lexer_console/lexer_console_test
+
+run_lexer_tokens: $(BUILD_DIR)/lexer_tokens/lexer_tokens_test
+	cd lexer_tokens && ../../build/lexer_tokens/lexer_tokens_test
+
+run_parser_ast: $(BUILD_DIR)/parser_ast/parser_ast_test
+	cd parser_ast && ../../build/parser_ast/parser_ast_test
+
+run_parser_console: $(BUILD_DIR)/parser_console/parser_console_test
+	cd parser_console && ../../build/parser_console/parser_console_test
+
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: clean all
+
+clang:
+	$(MAKE) CC=clang
+
+clang-debug:
+	$(MAKE) CC=clang debug
+
+clean:
+	rm -f $(TESTS)
