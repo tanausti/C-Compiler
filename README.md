@@ -251,7 +251,7 @@ Syntax error (2, 12): expected ';' at end of statement.
 
 ## Testing
 
-Kiln uses a custom regression test harness to verify compiler functionality.
+Kiln uses a custom regression test harness to verify functionality.
 
 Tests are organized by compiler component. Each test suite uses:
 
@@ -260,29 +260,38 @@ Tests are organized by compiler component. Each test suite uses:
 * Input programs (`input#.c`)
 * Expected output files (`expected_out#.<ext>`)
 * Generated output files (`actual_out#.<ext>`)
-* Independent Makefiles
 
 The test harness compares each generated `actual_out#.<ext>` file against its corresponding `expected_out#.<ext>` file.
 
 To add a new test, create a numbered input file (`input#.c`) and a matching expected output file (`expected_out#.<ext>`). Run the test suite with the highest test number, and the harness will automatically execute all tests from `1` through that number and compare the generated outputs against the expected outputs.
 
-Compile a test suite:
+Compile all test suites:
 
 ```bash
-cd test/ir
+cd test
 make
 
 ```
 
+Compile an individual test suite:
+
+```bash
+cd test
+make ir
+
+```
+Run test executables from the project root so relative paths resolve correctly.
+
 Run a test suite:
 ```bash
-# Runs all tests numbered 1-5
-./ir_test 5
+./build/ir_test/ir_test 8
 ```
 
 
 ---
 
 ## License
+
+This project is licensed under the MIT License.
 
 This project is licensed under the MIT License.
