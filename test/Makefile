@@ -44,52 +44,42 @@ PARSER_CONSOLE_SOURCES = \
 	../src/lexer/lexer.c
 
 TESTS = \
-	$(BUILD_DIR)/ir_test \
-	$(BUILD_DIR)/lexer_console_test \
-	$(BUILD_DIR)/lexer_tokens_test \
-	$(BUILD_DIR)/parser_ast_test \
-	$(BUILD_DIR)/parser_console_test
+	$(BUILD_DIR)/ir/ir_test \
+	$(BUILD_DIR)/lexer_console/lexer_console_test \
+	$(BUILD_DIR)/lexer_tokens/lexer_tokens_test \
+	$(BUILD_DIR)/parser_ast/parser_ast_test \
+	$(BUILD_DIR)/parser_console/parser_console_test
 
 .PHONY: all ir lexer_console lexer_tokens parser_ast parser_console debug clang clang-debug clean
 
 all: $(TESTS)
 
-ir: $(BUILD_DIR)/ir_test
+ir: $(BUILD_DIR)/ir/ir_test
 
-lexer_console: $(BUILD_DIR)/lexer_console_test
+lexer_console: $(BUILD_DIR)/lexer_console/lexer_console_test
 
-lexer_tokens: $(BUILD_DIR)/lexer_tokens_test
+lexer_tokens: $(BUILD_DIR)/lexer_tokens/lexer_tokens_test
 
-parser_ast: $(BUILD_DIR)/parser_ast_test
+parser_ast: $(BUILD_DIR)/parser_ast/parser_ast_test
 
-parser_console: $(BUILD_DIR)/parser_console_test
+parser_console: $(BUILD_DIR)/parser_console/parser_console_test
 
-$(BUILD_DIR):
-	mkdir -p $@
-
-$(BUILD_DIR)/ir_test: $(IR_SOURCES) | $(BUILD_DIR)
+$(BUILD_DIR)/ir/ir_test: $(IR_SOURCES)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(IR_SOURCES) $(LLVM_FLAGS) -o $@
 
-$(BUILD_DIR)/lexer_console_test: $(LEXER_CONSOLE_SOURCES) | $(BUILD_DIR)
+$(BUILD_DIR)/lexer_console/lexer_console_test: $(LEXER_CONSOLE_SOURCES)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LEXER_CONSOLE_SOURCES) -o $@
 
-$(BUILD_DIR)/lexer_tokens_test: $(LEXER_TOKENS_SOURCES) | $(BUILD_DIR)
+$(BUILD_DIR)/lexer_tokens/lexer_tokens_test: $(LEXER_TOKENS_SOURCES)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LEXER_TOKENS_SOURCES) -o $@
 
-$(BUILD_DIR)/parser_ast_test: $(PARSER_AST_SOURCES) | $(BUILD_DIR)
+$(BUILD_DIR)/parser_ast/parser_ast_test: $(PARSER_AST_SOURCES)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(PARSER_AST_SOURCES) -o $@
 
-$(BUILD_DIR)/parser_console_test: $(PARSER_CONSOLE_SOURCES) | $(BUILD_DIR)
+$(BUILD_DIR)/parser_console/parser_console_test: $(PARSER_CONSOLE_SOURCES)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(PARSER_CONSOLE_SOURCES) -o $@
-
-debug: CFLAGS += $(DEBUG_FLAGS)
-debug: clean all
-
-clang:
-	$(MAKE) CC=clang
-
-clang-debug:
-	$(MAKE) CC=clang debug
-
-clean:
-	rm -f $(TESTS)
