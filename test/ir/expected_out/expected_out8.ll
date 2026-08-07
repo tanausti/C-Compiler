@@ -1,5 +1,5 @@
-; ModuleID = 'actual_out/actual_out8.ll'
-source_filename = "actual_out/actual_out8.ll"
+; ModuleID = 'test/ir/actual_out/actual_out8.ll'
+source_filename = "test/ir/actual_out/actual_out8.ll"
 
 define i32 @add() {
 entry:

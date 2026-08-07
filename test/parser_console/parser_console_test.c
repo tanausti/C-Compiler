@@ -27,7 +27,7 @@ int main(int argc, char* argv[]){
 FILE* parse_error_get_expected_out(int test_num){
 
 	char expected_out_filename[256];
-	snprintf(expected_out_filename, sizeof(expected_out_filename), "expected_out/expected_out%d.txt", test_num);
+	snprintf(expected_out_filename, sizeof(expected_out_filename), "test/parser_console/expected_out/expected_out%d.txt", test_num);
 	FILE* expected_out = fopen(expected_out_filename, "r");
 	return expected_out;
 
@@ -38,12 +38,12 @@ FILE* parse_error_get_expected_out(int test_num){
 FILE* parse_error_get_actual_out(int test_num){
 
 	char actual_out_filename[256];
-	snprintf(actual_out_filename, sizeof(actual_out_filename), "actual_out/actual_out%d.txt", test_num);
+	snprintf(actual_out_filename, sizeof(actual_out_filename), "test/parser_console/actual_out/actual_out%d.txt", test_num);
 	FILE* actual_out = freopen(actual_out_filename, "w+", stderr);
 
 
 	char input_filename[256];
-	snprintf(input_filename, sizeof(input_filename), "input/input%d.c", test_num);
+	snprintf(input_filename, sizeof(input_filename), "test/parser_console/input/input%d.c", test_num);
 	FILE* input = fopen(input_filename, "r");
 
 

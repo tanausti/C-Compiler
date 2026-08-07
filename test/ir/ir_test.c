@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
 FILE* ir_get_expected_out(int test_num){
 
 	char expected_out_filename[256];
-	snprintf(expected_out_filename, sizeof(expected_out_filename), "expected_out/expected_out%d.ll", test_num);
+	snprintf(expected_out_filename, sizeof(expected_out_filename), "test/ir/expected_out/expected_out%d.ll", test_num);
 	FILE* expected_out = fopen(expected_out_filename, "r");
 	return expected_out;
 
@@ -40,7 +40,7 @@ FILE* ir_get_expected_out(int test_num){
 FILE* ir_get_actual_out(int test_num){
 
 	char input_filename[256];
-	snprintf(input_filename, sizeof(input_filename), "input/input%d.c", test_num);
+	snprintf(input_filename, sizeof(input_filename), "test/ir/input/input%d.c", test_num);
 	FILE* input = fopen(input_filename, "r");
 	
 	//these tests only take valid ASTs (no error nodes)
@@ -48,7 +48,7 @@ FILE* ir_get_actual_out(int test_num){
 	fclose(input);
 
 	char actual_out_filename[256];
-	snprintf(actual_out_filename, sizeof(actual_out_filename), "actual_out/actual_out%d.ll", test_num); 
+	snprintf(actual_out_filename, sizeof(actual_out_filename), "test/ir/actual_out/actual_out%d.ll", test_num); 
 	generate_llvm_to_file(actual_out_filename, ast);
 
 	free_ast(ast);
