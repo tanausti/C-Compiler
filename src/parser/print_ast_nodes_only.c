@@ -100,7 +100,7 @@ void print_program_node(FILE* out, program_t program, int indent_level){
 	indent(out, indent_level);
 	fprintf(out, "-program\n");
 
-	print_function_list(out, program.function_list, indent_level + 1);
+	print_function_list(out, program.function_list, indent_level);
 
 
 }
@@ -109,7 +109,7 @@ void print_function_list(FILE* out, function_list_t function_list, int indent_le
 
 
 	for(int i = 0; i < function_list.vector_tree.size; i++){
-		print_ast_child(out, *function_list.vector_tree.children[i], indent_level);
+		print_ast_child(out, *function_list.vector_tree.children[i], indent_level + 1);
 	}
 
 
@@ -122,7 +122,7 @@ void print_function_node(FILE* out, function_t function, int indent_level){
 	fprintf(out, "-function\n");
 
 	statement_list_t statement_list = function.statement_list;
-	print_statement_list(out, statement_list, indent_level + 1);
+	print_statement_list(out, statement_list, indent_level);
 
 
 }
@@ -149,7 +149,8 @@ void print_if_statement_node(FILE* out, if_statement_t if_statement, int indent_
 
 	fprintf(out, "-if_statement\n");
 
-	print_statement_list(out, if_statement.statement_list, indent_level + 1);
+	print_ast_child(out, *(if_statement.condition_node), indent_level + 1);
+	print_statement_list(out, if_statement.statement_list, indent_level);
 
 
 }
@@ -205,8 +206,6 @@ void print_binary_expression_node(FILE* out, binary_expression_t binary_expressi
 
 	indent(out, indent_level);
 	fprintf(out, "-binary_expression\n");
-
-	print_primitive_type(out, binary_expression.primitive_type, indent_level + 1);
 
 	print_ast_child(out, *binary_expression.left, indent_level + 1);
 	print_ast_child(out, *binary_expression.right, indent_level + 1);
