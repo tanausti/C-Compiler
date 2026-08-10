@@ -1,6 +1,6 @@
 # Kiln
 
-Kiln is a compiler for a subset of the C programming language, implemented in C, that generates LLVM IR. It includes the core stages of a modern compiler, including lexical analysis, recursive-descent parsing, abstract syntax tree (AST) construction, and LLVM IR generation. The generated LLVM IR can be compiled into native executables using the LLVM toolchain.
+Kiln is a compiler for a subset of the C programming language, implemented in C, that generates LLVM IR. It includes the core stages of a modern compiler, including lexical analysis, recursive-descent parsing, abstract syntax tree (AST) construction, and IR code generation. The generated LLVM IR can be compiled into native executables using the LLVM toolchain.
 
 This project was developed to explore systems programming and language design while creating a modular compiler architecture that can later be extended with additional C language features.
 
